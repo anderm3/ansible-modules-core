@@ -90,7 +90,7 @@ options:
     description:
       - Switches the module behaviour between put (upload), get (download), geturl (return download url, Ansible 1.3+), getstr (download object as string (1.3+)), list (list keys, Ansible 2.0+), create (bucket), delete (bucket), and delobj (delete object, Ansible 2.0+).
     required: true
-    choices: ['get', 'put', 'delete', 'create', 'geturl', 'getstr', 'delobj', 'list']
+    choices: ['get', 'put', 'delete', 'create', 'geturl', 'getstr', 'delobj', 'list', 'move', 'dupe']
   object:
     description:
       - Keyname of the object inside the bucket. Can be used to create "virtual directories", see examples.
@@ -441,7 +441,7 @@ def main():
             marker         = dict(default=None),
             max_keys       = dict(default=1000),
             metadata       = dict(type='dict'),
-            mode           = dict(choices=['get', 'put', 'delete', 'create', 'geturl', 'getstr', 'delobj', 'list'], required=True),
+            mode           = dict(choices=['get', 'put', 'delete', 'create', 'geturl', 'getstr', 'delobj', 'list', 'move', 'dupe'], required=True),
             object         = dict(),
             permission     = dict(type='list', default=['private']),
             version        = dict(default=None),
@@ -669,6 +669,17 @@ def main():
         else:
             module.fail_json(msg="Bucket parameter is required.", failed=True)
 
+    # Duplicate an object from one bucket to another
+    if mode == 'dupe':
+        if bucket:
+            bucketrtn = bucket_check(module, s3, bucket)
+            if bucketrtn is True:
+
+            else:
+                module.fail_json(msg="Bucket does not exist.", changed=False)
+        else:
+            module.fail_json(msg="Bucket parameter is required.", failed=True)
+
     # Support for listing a set of keys
     if mode == 'list':
         bucket_object = get_bucket(module, s3, bucket)
@@ -733,6 +744,17 @@ def main():
                         module.fail_json(msg="Key %s with version id %s does not exist."% (obj, version), failed=True)
                     else:
                         module.fail_json(msg="Key %s does not exist."%obj, failed=True)
+
+    # Move an object from one bucket to another
+    if mode == 'move':
+        if bucket:
+            bucketrtn = bucket_check(module, s3, bucket)
+            if bucketrtn is True:
+
+            else:
+                module.fail_json(msg="Bucket does not exist.", changed=False)
+        else:
+            module.fail_json(msg="Bucket parameter is required.", failed=True)
 
     module.exit_json(failed=False)
 
